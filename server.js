@@ -21,7 +21,7 @@ app.get('/notes', (req, res) => {
 
 // API route for notes page
 app.get('/api/notes', (req, res) => {
-    res.json()
+    res.json(dataBase.slice(1));
 });
 
 app.post('/api/notes', (req, res) => {
