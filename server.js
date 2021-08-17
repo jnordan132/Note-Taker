@@ -1,9 +1,9 @@
 const express = require('express');
 const path = require('path');
 const dataBase = require('./db/db.json');
-const { createNote, deleteNote } = require('./helpers/functions')
+const fs = require('fs');
 
-const PORT = 3001;
+const PORT = process.env.port || 3001;
 const app = express();
 
 app.use(express.json());
@@ -25,16 +25,46 @@ app.get('/api/notes', (req, res) => {
 });
 
 app.post('/api/notes', (req, res) => {
-    const newNote = createNote(req.body, dataBase);
-    res.json(newNote);
-    createNote(req.body, dataBase);
-});
+        const newNote = createNote(req.body, dataBase);
+        res.json(newNote);
+    })
+    // Function to create new note and count ID for each note
+const createNote = (body, notesArray) => {
+    const newNote = body;
+    if (!Array.isArray(notesArray))
+        notesArray = [];
+    if (notesArray.length === 0)
+        notesArray.push(0);
+
+    body.id = notesArray.length;
+    notesArray[0]++;
+    notesArray.push(newNote);
+
+    fs.writeFileSync(
+        path.join(__dirname, './db/db.json'),
+        JSON.stringify(notesArray, null, 2)
+    );
+    return newNote;
+};
 
 app.delete('/api/notes/:id', (req, res) => {
-    deleteNote(req.params.id, dataBase);
-    res.json(true);
-    deleteNote(id, notesArray);
-});
+        deleteNote(req.params.id, dataBase);
+        res.json(true);
+    })
+    // Function to delete notes if user decided to
+const deleteNote = (id, notesArray) => {
+    for (let i = 0; i < notesArray.length; i++) {
+        let note = notesArray[i];
+        if (note.id == id) {
+            notesArray.splice(i, 1);
+            fs.writeFileSync(
+                path.join(__dirname, './db/db.json'),
+                JSON.stringify(notesArray, null, 2)
+            );
+            break;
+        }
+    }
+};
 
 
 // App listenening at http://localhost:3001
